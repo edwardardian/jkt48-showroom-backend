@@ -1,13 +1,16 @@
 const { BASE_URL, ROOM, LIVE } = require("../utils/api");
 const service = require("../utils/service");
-const memberRoom = require("../utils/memberRooms");
+const {
+  getAllMemberRooms,
+  getAllTraineeRooms,
+} = require("../utils/memberRooms");
 
 const rooms = {
   getProfile: async (req, res) => {
     try {
       const { memberId } = req.params;
       console.log(`Received memberId: ${memberId}`);
-      const roomId = memberRoom(memberId);
+      const roomId = getAllMemberRooms(memberId);
 
       if (!roomId) {
         console.log(`Room not found for memberId: ${memberId}`);
@@ -23,7 +26,7 @@ const rooms = {
     }
   },
 
-  getAllProfiles: async (req, res) => {
+  getAllMemberProfiles: async (req, res) => {
     try {
       const allProfiles = [];
       const allMemberId = [
@@ -54,6 +57,33 @@ const rooms = {
         "raisha",
         "adel",
         "gracia",
+      ];
+
+      for (const memberId of allMemberId) {
+        const roomId = getAllMemberRooms(memberId);
+        if (roomId) {
+          console.log(
+            `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
+          );
+          const profile = await service(
+            `${ROOM}/profile?room_id=${roomId}`,
+            res
+          );
+          allProfiles.push(profile);
+        }
+      }
+
+      res.send(allProfiles);
+    } catch (error) {
+      console.error("Error while fetching all member room profiles:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  },
+
+  getAllTraineeProfiles: async (req, res) => {
+    try {
+      const allProfiles = [];
+      const allTraineeId = [
         "aralie",
         "delynn",
         "shasa",
@@ -83,13 +113,12 @@ const rooms = {
         "kimmy",
       ];
 
-      for (const memberId of allMemberId) {
-        const roomId = memberRoom(memberId);
+      for (const memberId of allTraineeId) {
+        const roomId = getAllTraineeRooms(memberId);
         if (roomId) {
           console.log(
-            `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
+            `Fetching profile for trainee memberId: ${memberId}, roomId: ${roomId}`
           );
-
           const profile = await service(
             `${ROOM}/profile?room_id=${roomId}`,
             res
@@ -100,7 +129,7 @@ const rooms = {
 
       res.send(allProfiles);
     } catch (error) {
-      console.error("Error while fetching all room profiles:", error);
+      console.error("Error while fetching all trainee room profiles:", error);
       res.status(500).send("Internal Server Error");
     }
   },
