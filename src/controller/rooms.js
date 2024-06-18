@@ -1,16 +1,13 @@
 const { BASE_URL, ROOM, LIVE } = require("../utils/api");
 const service = require("../utils/service");
-const {
-  getAllMemberRooms,
-  getAllTraineeRooms,
-} = require("../utils/memberRooms");
+const memberRoom = require("../utils/memberRooms");
 
 const rooms = {
   getProfile: async (req, res) => {
     try {
       const { memberId } = req.params;
       console.log(`Received memberId: ${memberId}`);
-      const roomId = getAllMemberRooms(memberId);
+      const roomId = memberRoom(memberId);
 
       if (!roomId) {
         console.log(`Room not found for memberId: ${memberId}`);
@@ -26,9 +23,9 @@ const rooms = {
     }
   },
 
-  getAllMemberProfiles: async (req, res) => {
+  getAllMember: async (req, res) => {
     try {
-      const allProfiles = [];
+      const allMemberProfiles = [];
       const allMemberId = [
         "amanda",
         "christy",
@@ -60,29 +57,33 @@ const rooms = {
       ];
 
       for (const memberId of allMemberId) {
-        const roomId = getAllMemberRooms(memberId);
+        console.log(`Fetching profile for memberId: ${memberId}`);
+        const roomId = memberRoom(memberId);
         if (roomId) {
           console.log(
             `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
           );
+
           const profile = await service(
             `${ROOM}/profile?room_id=${roomId}`,
             res
           );
-          allProfiles.push(profile);
+          allMemberProfiles.push(profile);
+        } else {
+          console.log(`Room not found for memberId: ${memberId}`);
         }
       }
 
-      res.send(allProfiles);
+      res.send(allMemberProfiles);
     } catch (error) {
       console.error("Error while fetching all member room profiles:", error);
       res.status(500).send("Internal Server Error");
     }
   },
 
-  getAllTraineeProfiles: async (req, res) => {
+  getAllTrainee: async (req, res) => {
     try {
-      const allProfiles = [];
+      const allTraineeProfiles = [];
       const allTraineeId = [
         "aralie",
         "delynn",
@@ -114,22 +115,23 @@ const rooms = {
       ];
 
       for (const memberId of allTraineeId) {
-        const roomId = getAllTraineeRooms(memberId);
+        const roomId = memberRoom(memberId);
         if (roomId) {
           console.log(
-            `Fetching profile for trainee memberId: ${memberId}, roomId: ${roomId}`
+            `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
           );
+
           const profile = await service(
             `${ROOM}/profile?room_id=${roomId}`,
             res
           );
-          allProfiles.push(profile);
+          allTraineeProfiles.push(profile);
         }
       }
 
-      res.send(allProfiles);
+      res.send(allTraineeProfiles);
     } catch (error) {
-      console.error("Error while fetching all trainee room profiles:", error);
+      console.error("Error while fetching all room profiles:", error);
       res.status(500).send("Internal Server Error");
     }
   },
