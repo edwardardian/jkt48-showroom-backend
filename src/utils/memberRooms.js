@@ -42,7 +42,7 @@ const getMemberRooms = (type) => {
       feni: "317738",
       fiony: "318223",
       flora: "318224",
-      freya: "318224",
+      freya: "318225",
       ella: "400715",
       gita: "318117",
       gracie: "461478",
