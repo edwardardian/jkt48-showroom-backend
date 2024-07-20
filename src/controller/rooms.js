@@ -15,7 +15,7 @@ const rooms = {
       }
 
       console.log(`Fetching profile for roomId: ${roomId}`);
-      const profile = await service(`${ROOM}/profile?room_id=${roomId}`, res);
+      const profile = await service(`${ROOM}/profile?room_id=${roomId}`);
       res.send(profile);
     } catch (error) {
       console.error("Error while fetching room profile:", error);
@@ -64,13 +64,19 @@ const rooms = {
             `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
           );
 
-          const profile = await service(
-            `${ROOM}/profile?room_id=${roomId}`,
-            res
-          );
-          allMemberProfiles.push(profile);
+          try {
+            const profile = await service(`${ROOM}/profile?room_id=${roomId}`);
+            allMemberProfiles.push(profile);
+          } catch (error) {
+            console.error(
+              `Error fetching profile for ${memberId}:`,
+              error.message
+            );
+            allMemberProfiles.push({ memberId, error: error.message });
+          }
         } else {
           console.log(`Room not found for memberId: ${memberId}`);
+          allMemberProfiles.push({ memberId, error: "Room ID not found" });
         }
       }
 
@@ -115,23 +121,32 @@ const rooms = {
       ];
 
       for (const memberId of allTraineeId) {
+        console.log(`Fetching profile for memberId: ${memberId}`);
         const roomId = memberRoom(memberId);
         if (roomId) {
           console.log(
             `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
           );
 
-          const profile = await service(
-            `${ROOM}/profile?room_id=${roomId}`,
-            res
-          );
-          allTraineeProfiles.push(profile);
+          try {
+            const profile = await service(`${ROOM}/profile?room_id=${roomId}`);
+            allTraineeProfiles.push(profile);
+          } catch (error) {
+            console.error(
+              `Error fetching profile for ${memberId}:`,
+              error.message
+            );
+            allTraineeProfiles.push({ memberId, error: error.message });
+          }
+        } else {
+          console.log(`Room not found for memberId: ${memberId}`);
+          allTraineeProfiles.push({ memberId, error: "Room ID not found" });
         }
       }
 
       res.send(allTraineeProfiles);
     } catch (error) {
-      console.error("Error while fetching all room profiles:", error);
+      console.error("Error while fetching all trainee room profiles:", error);
       res.status(500).send("Internal Server Error");
     }
   },

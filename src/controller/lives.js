@@ -3,24 +3,62 @@ const service = require("../utils/service");
 const memberRoom = require("../utils/memberRooms");
 
 const lives = {
-  getStreamUrl: async (req, res) => {
+  getMemberStreamUrl: async (res) => {
     try {
-      const { memberId } = req.params;
-      const roomId = memberRoom(memberId);
+      const allMemberLives = [];
+      const allMemberId = [
+        "amanda",
+        "christy",
+        "lia",
+        "zee",
+        "callie",
+        "oniel",
+        "olla",
+        "feni",
+        "fiony",
+        "flora",
+        "freya",
+        "ella",
+        "gita",
+        "gracie",
+        "greesel",
+        "eli",
+        "indah",
+        "indira",
+        "jessi",
+        "lyn",
+        "kathrina",
+        "lulu",
+        "marsha",
+        "muthe",
+        "raisha",
+        "adel",
+        "gracia",
+      ];
 
-      if (!roomId) {
-        return res
-          .status(404)
-          .send({ message: "Room not found for the given member ID" });
+      for (const memberId of allMemberId) {
+        console.log(`Fetching streaming URL for memberId: ${memberId}`);
+        const roomId = memberRoom(memberId);
+        if (roomId) {
+          console.log(
+            `Fetching streaming URL for memberId: ${memberId}, roomId: ${roomId}`
+          );
+
+          const memberStreamUrl = await service(
+            `${LIVE}/streaming_url?room_id=${roomId}`,
+            res
+          );
+
+          allMemberLives.push(memberStreamUrl);
+        } else {
+          console.log(`Streaming URL not found for memberId: ${memberId}`);
+        }
       }
 
-      const url = await service(`${LIVE}/streaming_url?room_id=${roomId}`, res);
-      res.send(url);
+      res.send(allMemberLives);
     } catch (error) {
-      console.error("Error while fetching lives:", error);
-      res.status(500).send("Internal Server Error");
+      console.error("Error while fetching all member streaming URL:", error);
     }
   },
 };
-
 module.exports = lives;
