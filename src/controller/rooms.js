@@ -91,7 +91,6 @@ const rooms = {
       const allTraineeId = [
         "aralie",
         "delynn",
-        "shasa",
         "alya",
         "anindya",
         "lana",
