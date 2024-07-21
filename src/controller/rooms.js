@@ -25,9 +25,8 @@ const rooms = {
     }
   },
 
-  getAllMember: async (req, res) => {
+  getAllProfiles: async (req, res) => {
     try {
-      const allMemberProfiles = [];
       const allMemberId = [
         "amanda",
         "christy",
@@ -58,36 +57,6 @@ const rooms = {
         "gracia",
       ];
 
-      for (const memberId of allMemberId) {
-        console.log(`Fetching profile for memberId: ${memberId}`);
-        const roomId = memberRoom(memberId);
-        if (roomId) {
-          console.log(
-            `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
-          );
-
-          const profile = await service(
-            `${ROOM}/profile?room_id=${roomId}`,
-            res
-          );
-          allMemberProfiles.push(profile);
-        } else {
-          console.log(`Room not found for memberId: ${memberId}`);
-        }
-      }
-
-      res.send(allMemberProfiles);
-    } catch (error) {
-      console.error("Error while fetching all member room profiles:", error);
-      if (!res.headersSent) {
-        res.status(500).send("Internal Server Error");
-      }
-    }
-  },
-
-  getAllTrainee: async (req, res) => {
-    try {
-      const allTraineeProfiles = [];
       const allTraineeId = [
         "aralie",
         "delynn",
@@ -117,26 +86,39 @@ const rooms = {
         "kimmy",
       ];
 
-      for (const memberId of allTraineeId) {
+      const allIds = [...allMemberId, ...allTraineeId];
+
+      const profilePromises = allIds.map(async (memberId) => {
         const roomId = memberRoom(memberId);
         if (roomId) {
           console.log(
             `Fetching profile for memberId: ${memberId}, roomId: ${roomId}`
           );
-
-          const profile = await service(
-            `${ROOM}/profile?room_id=${roomId}`,
-            res
-          );
-          allTraineeProfiles.push(profile);
+          try {
+            const profile = await service(
+              `${ROOM}/profile?room_id=${roomId}`,
+              res
+            );
+            return profile;
+          } catch (error) {
+            console.error(
+              `Error while fetching profile for memberId: ${memberId}`,
+              error
+            );
+            return null;
+          }
         } else {
           console.log(`Room not found for memberId: ${memberId}`);
+          return null;
         }
-      }
+      });
 
-      res.send(allTraineeProfiles);
+      const profiles = await Promise.all(profilePromises);
+      const validProfiles = profiles.filter((profile) => profile !== null);
+
+      res.send(validProfiles);
     } catch (error) {
-      console.error("Error while fetching all room profiles:", error);
+      console.error("Error while fetching all profiles:", error);
       if (!res.headersSent) {
         res.status(500).send("Internal Server Error");
       }
