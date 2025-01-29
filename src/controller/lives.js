@@ -3,7 +3,7 @@ const service = require("../utils/service");
 const memberRoom = require("../utils/memberRooms");
 
 const lives = {
-  getMemberStreamUrl: async (res) => {
+  getMemberStreamUrl: async (req, res) => {
     try {
       const allMemberLives = [];
       const allMemberId = [
@@ -37,28 +37,56 @@ const lives = {
       ];
 
       for (const memberId of allMemberId) {
-        console.log(`Fetching streaming URL for memberId: ${memberId}`);
-        const roomId = memberRoom(memberId);
-        if (roomId) {
-          console.log(
-            `Fetching streaming URL for memberId: ${memberId}, roomId: ${roomId}`
-          );
+        try {
+          console.log(`Fetching streaming URL for memberId: ${memberId}`);
+          const roomId = memberRoom(memberId);
 
-          const memberStreamUrl = await service(
-            `${LIVE}/streaming_url?room_id=${roomId}`,
-            res
-          );
+          if (roomId) {
+            const memberStreamUrl = await service(
+              `${LIVE}/streaming_url?room_id=${roomId}`
+            );
 
-          allMemberLives.push(memberStreamUrl);
-        } else {
-          console.log(`Streaming URL not found for memberId: ${memberId}`);
+            allMemberLives.push({
+              memberId,
+              roomId,
+              streamingUrl: memberStreamUrl,
+            });
+          } else {
+            console.log(`Room ID not found for memberId: ${memberId}`);
+            allMemberLives.push({
+              memberId,
+              roomId: null,
+              streamingUrl: null,
+              error: "Room ID not found",
+            });
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching streaming URL for ${memberId}:`,
+            error.message
+          );
+          allMemberLives.push({
+            memberId,
+            roomId: null,
+            streamingUrl: null,
+            error: error.message,
+          });
         }
       }
 
-      res.send(allMemberLives);
+      res.status(200).send({
+        status: true,
+        message: "Successfully fetched all member streaming URLs",
+        data: allMemberLives,
+      });
     } catch (error) {
-      console.error("Error while fetching all member streaming URL:", error);
+      console.error("Error while fetching all member streaming URLs:", error);
+      res.status(500).send({
+        status: false,
+        message: "Internal Server Error",
+      });
     }
   },
 };
+
 module.exports = lives;
