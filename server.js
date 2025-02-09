@@ -6,8 +6,8 @@ const livesRouter = require("./src/routes/livesRoutes");
 
 app.use(cors());
 
-app.get("/", (res) => {
-  res.send({
+app.get("/", (req, res) => {
+  res.json({
     message: "Welcome to JKT 48 Showroom API Fanmade",
     author: "https://github.com/edwardardian",
   });
